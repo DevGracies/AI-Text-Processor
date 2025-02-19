@@ -24,7 +24,7 @@ function App() {
       setOpenSnackbar(true);
       return;
     }
-    setErrorMessage(""); // Clear previous errors
+    setErrorMessage("");
 
     const newMessage = {
       text: inputText,
@@ -37,7 +37,7 @@ function App() {
 
     // Language Detection using Chrome AI API
     try {
-      const detector = await window.ai.languageDetector.create();
+      const detector = await self.ai.languageDetector.create();
       const results = await detector.detect(newMessage.text);
       newMessage.language = results[0].detectedLanguage;
       setMessages([...messages, newMessage]);
@@ -51,7 +51,7 @@ function App() {
   const handleSummarize = async (index) => {
     const message = messages[index];
     try {
-      const summarizer = await window.ai.summarizer.create();
+      const summarizer = await self.ai.summarizer.create();
       const result = await summarizer.summarize(message.text);
       message.summary = result.summary;
       setMessages([...messages]);
@@ -66,12 +66,12 @@ function App() {
   const handleTranslate = async (index) => {
     const message = messages[index];
     try {
-      const translator = await window.ai.translator.create();
-      const result = await translator.translate({
-        text: message.text,
+      const translator = await self.ai.translator.create({
+        sourceLanguage: message.language,
         targetLanguage: selectedLanguage,
       });
-      message.translation = result.translation;
+      const result = await translator.translate(message.text);
+      message.translation = result;
       setMessages([...messages]);
     } catch (error) {
       console.error("Translation failed:", error);
@@ -112,12 +112,14 @@ function App() {
                 </p>
               )}
               <div className="translation-controls">
-                <FormControl variant="outlined" fullWidth>
+                <FormControl variant="outlined" fullWidth  >
                   <InputLabel>Target Language</InputLabel>
                   <Select
                     value={selectedLanguage}
                     onChange={(e) => setSelectedLanguage(e.target.value)}
                     label="Target Language"
+                    className="language-selector"
+
                   >
                     <MenuItem value="en">English</MenuItem>
                     <MenuItem value="pt">Portuguese</MenuItem>
@@ -131,7 +133,7 @@ function App() {
                   variant="contained"
                   color="secondary"
                   onClick={() => handleTranslate(index)}
-                  style={{ marginTop: "10px" }}
+                  style={{ marginTop: "0px" }}
                 >
                   Translate
                 </Button>
@@ -153,13 +155,13 @@ function App() {
         onChange={(e) => setInputText(e.target.value)}
         fullWidth
         variant="outlined"
-        style={{ marginBottom: "20px" }}
       />
 
       <Button
         variant="contained"
         color="primary"
         onClick={handleSend}
+        className="send-button"
         style={{ width: "100%", padding: "10px", fontSize: "18px" }}
       >
         Send
